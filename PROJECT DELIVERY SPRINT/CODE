@@ -1,0 +1,37 @@
+import wiotp.sdk.device
+import time
+import os
+import datetime
+import random
+
+myConfig = {
+    "identity":{
+        "orgId":"jpj8ce",
+        "typeId":"NodeMCU",
+        "deviceId":"0001"
+        },
+    "auth":{
+        "token":"12345678"
+        }
+    }
+client = wiotp.sdk.device.DeviceClient(config=myConfig, logHandlers=None)
+client.connect()
+
+def myCommandCallback(cmd):
+    print("Message received from IBM IoT platform: %s" % cmd.data['command'])
+    m=cmd.data['command']
+    if(m=="show"):
+        print("Output is displayed")
+    elif(m=="hide"):
+        print("Output is not displayed")
+    print(" ")
+while True:
+    toxic=random.randint(0,100)  
+    temperature=random.randint(0,60)
+    ph=random.randint(1,14)
+    myData={'toxic':toxic,'temperature':temperature,'ph':ph}
+    client.publishEvent(eventId="status", msgFormat="json", data=myData, qos=0, onPublish=None)
+    print("Published data successfully: %s", myData)
+    time.sleep(2)
+    client.commandCallback = myCommandCallback
+client.disconnect()
